@@ -6,4 +6,8 @@
     <RootNamespace>SLNL___Lang</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
+  </ItemGroup>
+
 </Project>

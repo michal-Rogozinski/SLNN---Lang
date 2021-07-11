@@ -1,25 +1,59 @@
 ﻿using System;
-
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 namespace SLNN___Lang
 {
     class Program
     {
         static void Main(string[] args)
         {
-            const string instrument1 = "Jest pewna procedura, nie można sobie wybrać płci\" - stwierdził minister Michał Wójcik w TVN24.A minister Przemysław Czarnek w RMF FM przekonywał: \"Szkoła nie jest od tego, by zmieniać płeć kogokolwiek. Od tego są pewne procedury\".Jednak w Polsce nie ma opisanej prawnej procedury dotyczącej korekty płci. A mimo to w naszym kraju, pod określonymi warunkami, można to przeprowadzić";
-            Perceptron perceptron1 = new Perceptron("en", 0.0);
-            Perceptron perceptron2 = new Perceptron("pl", 0.0);
-            Perceptron perceptron3 = new Perceptron("fr", 0.0);
-
-            for (int i = 0; i < 500; i++)
+            var filesDir = Directory.GetCurrentDirectory() + "\\Files";
+            List<string> listDir = new List<string>();
+            if (!Directory.Exists(filesDir))
             {
-                Methods.Train(@"C:\Users\rogo9\source\repos\SLNL - Lang\Files\EN", perceptron1);
-                Methods.Train(@"C:\Users\rogo9\source\repos\SLNL - Lang\Files\PL", perceptron2);
-                Methods.Train(@"C:\Users\rogo9\source\repos\SLNL - Lang\Files\FR", perceptron3);
+                Directory.CreateDirectory(filesDir);
             }
-            Console.WriteLine("eng "+perceptron1.getNetSigmoid(Methods.parseString(instrument1)));
-            Console.WriteLine("pl " +perceptron2.getNetSigmoid(Methods.parseString(instrument1)));
-            Console.WriteLine("fr " +perceptron3.getNetSigmoid(Methods.parseString(instrument1)));
+            string[] list = Directory.GetDirectories(filesDir);
+            if (list.Length == 0)
+            {
+                throw new Exception("Training files directory cannot be empty!");
+            }
+            else
+            {
+                foreach (string i in list)
+                {
+                    listDir.Add(i.Substring(i.Length - 2, 2));
+                }
+                Perceptron perceptron1 = new Perceptron(listDir[0], 0.0);
+                Perceptron perceptron2 = new Perceptron(listDir[1], 0.0);
+                Perceptron perceptron3 = new Perceptron(listDir[2], 0.0);
+
+                for (int i = 0; i < 500; i++)
+                {
+                    Methods.Train(list[0], perceptron1);
+                    Methods.Train(list[1], perceptron2);
+                    Methods.Train(list[2], perceptron3);
+                }
+
+                Console.WriteLine("Enter text to match");
+                string input = Console.ReadLine();
+
+                double[] output = new double[3];
+                output[0] = perceptron1.getNetSigmoid(Methods.parseString(input));
+                output[1] = perceptron2.getNetSigmoid(Methods.parseString(input));
+                output[2] = perceptron3.getNetSigmoid(Methods.parseString(input));
+
+                var maxVal = output.Max();
+                int maxIndex = output.ToList().IndexOf(maxVal);
+
+                for (int i = 0; i < output.Length; i++)
+                {
+                    Console.WriteLine("Output for sigmoid: " + listDir[i] + " : " + String.Format("{0:0.###}", output[i]));
+                }
+                Console.WriteLine("Maximum value at : " + listDir[maxIndex]);
+                Console.WriteLine("Identified language : " + listDir[maxIndex]);
+            }
         }
     }
 }
